@@ -1,8 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/di/injector.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/state/load_cubit.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/shimmer.dart';
@@ -29,7 +31,8 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('nav_history'))),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: TitleAppBar(title: context.tr('nav_history'), onBack: () => context.go(Routes.home)),
       body: BlocBuilder<PatientsCubit, LoadState<List<Patient>>>(
         bloc: _cubit,
         builder: (context, state) {

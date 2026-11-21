@@ -315,24 +315,40 @@ Color pageTitleColor(BuildContext context) =>
 
 /// White app bar: dark back arrow and a large blue title aligned to the start.
 class TitleAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const TitleAppBar({super.key, required this.title});
+  const TitleAppBar({super.key, required this.title, this.onBack});
 
   final String title;
 
+  /// Back action; defaults to popping the route. Tab roots pass "go home".
+  final VoidCallback? onBack;
+
   @override
-  Size get preferredSize => const Size.fromHeight(72);
+  Size get preferredSize => const Size.fromHeight(64);
 
   @override
   Widget build(BuildContext context) {
     final surface = Theme.of(context).colorScheme.surface;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return AppBar(
-      toolbarHeight: 72,
+      toolbarHeight: 64,
       backgroundColor: surface,
+      automaticallyImplyLeading: false,
       centerTitle: false,
-      titleSpacing: 8,
+      leadingWidth: 52,
+      titleSpacing: 0,
+      leading: IconButton(
+        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+        icon: Icon(Directionality.of(context) == TextDirection.rtl ? Icons.arrow_forward_rounded : Icons.arrow_back_rounded, size: 28),
+        color: dark ? Colors.white : AppColors.navy,
+        onPressed: onBack ?? () => Navigator.maybePop(context),
+      ),
       title: Text(
         title,
-        style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: pageTitleColor(context), fontWeight: FontWeight.w600),
+        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: pageTitleColor(context),
+              fontWeight: FontWeight.w600,
+              fontSize: 28,
+            ),
       ),
     );
   }

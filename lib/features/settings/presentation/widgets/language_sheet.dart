@@ -1,12 +1,17 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/theme/app_theme.dart';
 
 /// Language picker with hand-painted flags (recovered: _EgyptFlagPainter, _UsFlagPainter).
+/// Uses the root navigator so the sheet covers the bottom nav bar.
 Future<String?> showLanguageSheet(BuildContext context, String current) =>
     showModalBottomSheet<String>(
       context: context,
+      useRootNavigator: true,
       showDragHandle: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       builder: (_) => _LanguageSheet(current: current),
     );
 
@@ -17,17 +22,18 @@ class _LanguageSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(context.tr('language'), style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
+            Text(context.tr('language'), style: text.titleLarge?.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.center),
+            const SizedBox(height: 20),
             _LanguageOption(code: 'en', label: 'English', flag: const _UsFlag(), selected: current == 'en'),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             _LanguageOption(code: 'ar', label: 'العربية', flag: const _EgyptFlag(), selected: current == 'ar'),
           ],
         ),
@@ -46,16 +52,32 @@ class _LanguageOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-    return ListTile(
-      onTap: () => Navigator.pop(context, code),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: selected ? primary : Theme.of(context).colorScheme.outlineVariant),
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: BorderSide(color: selected ? AppColors.brand : (dark ? Colors.white12 : AppColors.fieldBorder), width: selected ? 1.5 : 1),
+    );
+    return Material(
+      color: selected ? AppColors.brand.withValues(alpha: 0.06) : (dark ? AppColors.darkBg : AppColors.fieldFill),
+      shape: shape,
+      child: InkWell(
+        customBorder: shape,
+        onTap: () => Navigator.pop(context, code),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            children: [
+              ClipRRect(borderRadius: BorderRadius.circular(4), child: SizedBox(width: 36, height: 24, child: flag)),
+              const SizedBox(width: 14),
+              Expanded(child: Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500))),
+              Icon(
+                selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+                color: selected ? AppColors.brand : Theme.of(context).hintColor,
+              ),
+            ],
+          ),
+        ),
       ),
-      leading: ClipRRect(borderRadius: BorderRadius.circular(4), child: SizedBox(width: 36, height: 24, child: flag)),
-      title: Text(label),
-      trailing: selected ? Icon(Icons.check_circle_rounded, color: primary) : null,
     );
   }
 }

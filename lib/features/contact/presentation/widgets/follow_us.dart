@@ -54,7 +54,7 @@ class _FollowUsSectionState extends State<FollowUsSection> {
             ),
           ),
           for (final i in items) ...[
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             _SquareButton(icon: i.$1, color: dark ? Colors.white : AppColors.navy, onTap: () => _open(i.$3!)),
           ],
         ],
@@ -86,9 +86,9 @@ class _SocialButton extends StatelessWidget {
         onTap: onTap,
         customBorder: const CircleBorder(),
         child: CircleAvatar(
-          radius: 24,
+          radius: 20,
           backgroundColor: color.withValues(alpha: 0.12),
-          child: FaIcon(icon, color: color, size: 20),
+          child: FaIcon(icon, color: color, size: 17),
         ),
       );
 }
@@ -113,7 +113,7 @@ class _SquareButton extends StatelessWidget {
       child: InkWell(
         customBorder: shape,
         onTap: onTap,
-        child: SizedBox(width: 52, height: 52, child: Center(child: FaIcon(icon, color: color, size: 22))),
+        child: SizedBox(width: 42, height: 42, child: Center(child: FaIcon(icon, color: color, size: 17))),
       ),
     );
   }

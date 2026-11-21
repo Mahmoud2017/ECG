@@ -124,7 +124,8 @@ class _AnalysisViewState extends State<_AnalysisView> {
       builder: (context, state) {
         final running = state.status == AnalysisStatus.running;
         return Scaffold(
-          appBar: AppBar(title: Text(context.tr('upload_title'))),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          appBar: TitleAppBar(title: context.tr('nav_analysis'), onBack: () => context.go(Routes.home)),
           body: AbsorbPointer(
             absorbing: running,
             child: Form(

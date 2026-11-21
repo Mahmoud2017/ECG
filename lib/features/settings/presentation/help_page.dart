@@ -144,6 +144,7 @@ class _FaqTileState extends State<_FaqTile> {
   late int _likes = widget.faq.likeCount;
   late int _unlikes = widget.faq.unlikeCount;
   bool? _vote; // true = helpful, false = not helpful
+  bool _open = false;
 
   Future<void> _castVote(bool helpful) async {
     if (_vote == helpful) return;
@@ -176,10 +177,19 @@ class _FaqTileState extends State<_FaqTile> {
             collapsedShape: const Border(),
             tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
-            iconColor: Theme.of(context).textTheme.bodyLarge?.color,
+            iconColor: pageTitleColor(context),
             collapsedIconColor: Theme.of(context).textTheme.bodyLarge?.color,
             expandedCrossAxisAlignment: CrossAxisAlignment.start,
-            title: Text(widget.faq.question, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w500, fontSize: 17)),
+            onExpansionChanged: (v) => setState(() => _open = v),
+            title: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 180),
+              style: text.titleMedium!.copyWith(
+                fontSize: 17,
+                fontWeight: _open ? FontWeight.w700 : FontWeight.w500,
+                color: _open ? pageTitleColor(context) : text.titleMedium?.color,
+              ),
+              child: Text(widget.faq.question),
+            ),
             children: [
               Text(widget.faq.answer, style: text.bodyMedium?.copyWith(color: Theme.of(context).hintColor, height: 1.6)),
               const SizedBox(height: 10),

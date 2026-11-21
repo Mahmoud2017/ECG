@@ -44,6 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final value = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       showDragHandle: true,
       builder: (ctx) => Padding(
         padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(ctx).viewInsets.bottom + 16),
@@ -83,7 +84,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final surface = Theme.of(context).colorScheme.surface;
     return Scaffold(
       backgroundColor: surface,
-      appBar: AppBar(backgroundColor: surface, title: Text(context.tr('nav_settings'))),
+      appBar: TitleAppBar(title: context.tr('nav_settings'), onBack: () => context.go(Routes.home)),
       body: BlocBuilder<ProfileCubit, LoadState<Profile>>(
         builder: (context, state) {
           final p = state.data;

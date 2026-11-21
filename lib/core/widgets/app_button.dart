@@ -36,7 +36,8 @@ class AppButton extends StatelessWidget {
           );
 
     const shape = StadiumBorder();
-    const size = Size.fromHeight(54);
+    const size = Size.fromHeight(50);
+    const padding = EdgeInsets.symmetric(horizontal: 24, vertical: 12);
     final textStyle = Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, fontSize: 16);
 
     if (outlined) {
@@ -44,6 +45,7 @@ class AppButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           shape: shape,
           minimumSize: size,
+          padding: padding,
           foregroundColor: AppColors.brand,
           side: const BorderSide(color: AppColors.brand),
           textStyle: textStyle,
@@ -57,6 +59,7 @@ class AppButton extends StatelessWidget {
       style: FilledButton.styleFrom(
         shape: shape,
         minimumSize: size,
+        padding: padding,
         backgroundColor: AppColors.brand,
         foregroundColor: Colors.white,
         disabledBackgroundColor: AppColors.brand.withValues(alpha: loading ? 0.85 : 0.4),

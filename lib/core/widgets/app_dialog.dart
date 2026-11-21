@@ -60,6 +60,18 @@ class _AppDialog extends StatelessWidget {
   final String? cancelLabel;
   final bool destructive;
 
+  Widget _confirmButton(BuildContext context, ColorScheme scheme) => destructive
+      ? FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: scheme.error,
+            shape: const StadiumBorder(),
+            minimumSize: const Size.fromHeight(50),
+          ),
+          onPressed: () => Navigator.pop(context, true),
+          child: Text(confirmLabel),
+        )
+      : AppButton(label: confirmLabel, onPressed: () => Navigator.pop(context, true));
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -98,22 +110,22 @@ class _AppDialog extends StatelessWidget {
               style: text.bodyMedium?.copyWith(color: Theme.of(context).hintColor, height: 1.5),
             ),
             const SizedBox(height: 24),
-            if (destructive)
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: scheme.error,
-                  shape: const StadiumBorder(),
-                  minimumSize: const Size.fromHeight(54),
-                ),
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(confirmLabel),
-              )
+            if (cancelLabel == null)
+              _confirmButton(context, scheme)
             else
-              AppButton(label: confirmLabel, onPressed: () => Navigator.pop(context, true)),
-            if (cancelLabel != null) ...[
-              const SizedBox(height: 8),
-              TextButton(onPressed: () => Navigator.pop(context, false), child: Text(cancelLabel!)),
-            ],
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      label: cancelLabel!,
+                      outlined: true,
+                      onPressed: () => Navigator.pop(context, false),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: _confirmButton(context, scheme)),
+                ],
+              ),
           ],
         ),
       ),

@@ -10,5 +10,4 @@ Future<bool> showLogoutDialog(BuildContext context) => showAppDialog(
       icon: Icons.logout_rounded,
       confirmLabel: context.tr('log_out'),
       cancelLabel: context.tr('cancel'),
-      destructive: true,
     );
