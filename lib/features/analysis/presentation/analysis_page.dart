@@ -84,12 +84,7 @@ class _AnalysisViewState extends State<_AnalysisView> {
         _fileName = name;
       });
 
-  void _comingSoon() => showAppDialog(
-        context,
-        title: context.tr('coming_soon'),
-        message: context.tr('coming_soon_body'),
-        icon: Icons.hourglass_top_rounded,
-      );
+  void _comingSoon(String feature) => showComingSoon(context, feature: feature);
 
   void _run() {
     if (_filePath == null) {
@@ -143,9 +138,9 @@ class _AnalysisViewState extends State<_AnalysisView> {
                     children: [
                       Expanded(child: _SourceTile(icon: Icons.photo_camera_outlined, title: context.tr('camera_scan'), subtitle: context.tr('camera_scan_sub'), onTap: _pickFromCamera)),
                       const SizedBox(width: 8),
-                      Expanded(child: _SourceTile(icon: Icons.folder_shared_outlined, title: context.tr('pacs_files'), subtitle: context.tr('pacs_files_sub'), onTap: _comingSoon)),
+                      Expanded(child: _SourceTile(icon: Icons.folder_shared_outlined, title: context.tr('pacs_files'), subtitle: context.tr('pacs_files_sub'), onTap: () => _comingSoon(context.tr('pacs_files')))),
                       const SizedBox(width: 8),
-                      Expanded(child: _SourceTile(icon: Icons.sync_rounded, title: context.tr('direct_sync'), subtitle: context.tr('direct_sync_sub'), onTap: _comingSoon)),
+                      Expanded(child: _SourceTile(icon: Icons.sync_rounded, title: context.tr('direct_sync'), subtitle: context.tr('direct_sync_sub'), onTap: () => _comingSoon(context.tr('direct_sync')))),
                     ],
                   ),
                   const SizedBox(height: 20),

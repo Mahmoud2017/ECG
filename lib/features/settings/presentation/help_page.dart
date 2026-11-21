@@ -5,13 +5,15 @@ import '../../../core/di/injector.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/state/load_cubit.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/errors.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/shimmer.dart';
+import '../../contact/data/contact_repository.dart';
+import '../../contact/presentation/widgets/follow_us.dart';
 import '../data/content_repository.dart';
 
-/// Help centre: header, FAQ (with helpful votes) and links to contact/privacy/terms.
+/// Help hub (FAQ / Privacy / Terms / Contact) or, with [faqOnly], the FAQ list
+/// with a "Follow Us" footer.
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key, this.faqOnly = false});
 
@@ -20,119 +22,110 @@ class HelpPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr(faqOnly ? 'faq' : 'help'))),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        children: [
-          if (!faqOnly) ...[
-            const _Header(),
-            const SizedBox(height: 20),
-          ],
-          _Section(title: context.tr('faq'), child: const _FaqList()),
-          if (!faqOnly) ...[
-            const SizedBox(height: 20),
-            Card(
-              clipBehavior: Clip.antiAlias,
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.support_agent_rounded),
-                    title: Text(context.tr('contact_us')),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => context.push(Routes.contact),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.privacy_tip_outlined),
-                    title: Text(context.tr('privacy_policy')),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => context.push(Routes.privacy),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.description_outlined),
-                    title: Text(context.tr('terms_conditions')),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => context.push(Routes.terms),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: TitleAppBar(title: context.tr(faqOnly ? 'faq' : 'help')),
+      body: faqOnly ? const _FaqBody() : const _HelpHub(),
     );
   }
 }
 
-class _Header extends StatelessWidget {
-  const _Header();
+class _HelpHub extends StatelessWidget {
+  const _HelpHub();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(gradient: AppColors.gradient, borderRadius: BorderRadius.circular(20)),
+    final items = [
+      (Icons.quiz_outlined, 'faq', Routes.faq),
+      (Icons.privacy_tip_outlined, 'privacy_policy', Routes.privacy),
+      (Icons.description_outlined, 'terms_conditions', Routes.terms),
+      (Icons.support_agent_rounded, 'contact_us', Routes.contact),
+    ];
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      itemCount: items.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 14),
+      itemBuilder: (context, i) => _HubTile(icon: items[i].$1, title: context.tr(items[i].$2), onTap: () => context.push(items[i].$3)),
+    );
+  }
+}
+
+class _HubTile extends StatelessWidget {
+  const _HubTile({required this.icon, required this.title, required this.onTap});
+
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final blue = pageTitleColor(context);
+    return OutlinedCard(
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
       child: Row(
         children: [
-          const Icon(Icons.help_center_rounded, color: Colors.white, size: 40),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              context.tr('message_hint'),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
-            ),
-          ),
+          Icon(icon, color: blue, size: 28),
+          const SizedBox(width: 18),
+          Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 17))),
+          Icon(Icons.chevron_right_rounded, color: blue),
         ],
       ),
     );
   }
 }
 
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
-
-  final String title;
-  final Widget child;
+class _FaqBody extends StatefulWidget {
+  const _FaqBody();
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [SectionHeader(title: title), const SizedBox(height: 8), child],
-      );
+  State<_FaqBody> createState() => _FaqBodyState();
 }
 
-class _FaqList extends StatefulWidget {
-  const _FaqList();
+class _FaqBodyState extends State<_FaqBody> {
+  late Future<List<Faq>> _future = _load();
+  ContactLinks? _links;
 
   @override
-  State<_FaqList> createState() => _FaqListState();
-}
-
-class _FaqListState extends State<_FaqList> {
-  Future<List<Faq>>? _future;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _future ??= _load();
+  void initState() {
+    super.initState();
+    // Footer is optional: a failure just hides it.
+    sl<ContactRepository>().fetchLinks().timeout(loadTimeout).then((l) {
+      if (mounted) setState(() => _links = l);
+    }, onError: (_) {});
   }
 
-  Future<List<Faq>> _load() =>
-      sl<ContentRepository>().fetchFaqs().timeout(loadTimeout);
+  Future<List<Faq>> _load() => sl<ContentRepository>().fetchFaqs().timeout(loadTimeout);
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Faq>>(
       future: _future,
       builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) return const ListSkeleton(count: 4);
+        if (snap.connectionState != ConnectionState.done) {
+          return const Padding(padding: EdgeInsets.all(20), child: ListSkeleton(count: 4));
+        }
         if (snap.hasError) {
-          return ErrorView(errorKey: errorKey(snap.error!), onRetry: () => setState(() {
+          return ErrorView(
+            errorKey: errorKey(snap.error!),
+            onRetry: () => setState(() {
               _future = _load();
-            }));
+            }),
+          );
         }
         final faqs = snap.data ?? const [];
         if (faqs.isEmpty) return EmptyState(message: context.tr('no_content'));
-        return Column(children: [for (final f in faqs) _FaqTile(faq: f)]);
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          children: [
+            for (final f in faqs) _FaqTile(faq: f),
+            if (_links != null) ...[
+              const SizedBox(height: 18),
+              const Divider(height: 1),
+              const SizedBox(height: 20),
+              FollowUsSection(links: _links!, inline: true),
+            ],
+          ],
+        );
       },
     );
   }
@@ -171,28 +164,35 @@ class _FaqTileState extends State<_FaqTile> {
 
   @override
   Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        child: ExpansionTile(
-          shape: const Border(),
-          collapsedShape: const Border(),
-          title: Text(widget.faq.question, style: const TextStyle(fontWeight: FontWeight.w600)),
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          expandedCrossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.faq.answer, style: const TextStyle(height: 1.5)),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(child: Text(context.tr('faq_helpful'), style: Theme.of(context).textTheme.bodySmall)),
-                _VoteButton(icon: Icons.thumb_up_alt_outlined, count: _likes, active: _vote == true, onTap: () => _castVote(true)),
-                const SizedBox(width: 8),
-                _VoteButton(icon: Icons.thumb_down_alt_outlined, count: _unlikes, active: _vote == false, onTap: () => _castVote(false)),
-              ],
-            ),
-          ],
+      padding: const EdgeInsets.only(bottom: 14),
+      child: OutlinedCard(
+        padding: EdgeInsets.zero,
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            shape: const Border(),
+            collapsedShape: const Border(),
+            tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+            iconColor: Theme.of(context).textTheme.bodyLarge?.color,
+            collapsedIconColor: Theme.of(context).textTheme.bodyLarge?.color,
+            expandedCrossAxisAlignment: CrossAxisAlignment.start,
+            title: Text(widget.faq.question, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w500, fontSize: 17)),
+            children: [
+              Text(widget.faq.answer, style: text.bodyMedium?.copyWith(color: Theme.of(context).hintColor, height: 1.6)),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(child: Text(context.tr('faq_helpful'), style: text.bodySmall?.copyWith(color: Theme.of(context).hintColor))),
+                  _VoteButton(icon: Icons.thumb_up_alt_outlined, count: _likes, active: _vote == true, onTap: () => _castVote(true)),
+                  const SizedBox(width: 4),
+                  _VoteButton(icon: Icons.thumb_down_alt_outlined, count: _unlikes, active: _vote == false, onTap: () => _castVote(false)),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -209,7 +209,7 @@ class _VoteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? Theme.of(context).colorScheme.primary : Theme.of(context).hintColor;
+    final color = active ? pageTitleColor(context) : Theme.of(context).hintColor;
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: onTap,

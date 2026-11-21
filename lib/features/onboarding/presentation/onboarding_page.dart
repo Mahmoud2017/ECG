@@ -21,8 +21,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final _controller = PageController();
   int _index = 0;
   bool _ready = false;
-
-  List<OnboardingSlide> get _slides => _repo.slides;
+  List<OnboardingSlide> _slides = OnboardingRepository.fallback;
   bool get _isLast => _index == _slides.length - 1;
 
   bool _started = false;
@@ -43,8 +42,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Future<void> _fadeInAfterShimmer() async {
-    // Let images decode behind a skeleton, then fade in.
-    await Future.wait([for (final s in _slides) precacheImage(AssetImage(s.icon), context)]);
+    // Load slides from the server behind a skeleton, decode their images, then fade in.
+    try {
+      final slides = await _repo.fetchSlides().timeout(const Duration(seconds: 8));
+      if (!mounted) return;
+      await Future.wait([
+        for (final s in slides)
+          if (s.imageUrl != null) precacheImage(NetworkImage(s.imageUrl!), context, onError: (_, _) {}),
+      ]).timeout(const Duration(seconds: 8), onTimeout: () => const []);
+      _slides = slides;
+    } catch (_) {
+      // Offline or server error: keep the built-in slides.
+    }
     if (mounted) setState(() => _ready = true);
   }
 
@@ -115,22 +124,28 @@ class _Slide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    // Server copy is English only; Arabic uses the built-in translations for the same slide.
+    final arabic = AppLocalizations.of(context).isArabic;
+    final title = arabic && slide.titleKey != null ? context.tr(slide.titleKey!) : slide.title;
+    final body = arabic && slide.bodyKey != null ? context.tr(slide.bodyKey!) : slide.body;
+    const fallbackImage = AssetImage('assets/images/splash_mark.png');
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset(slide.icon, height: 240),
+        SizedBox(
+          height: 260,
+          child: slide.imageUrl == null
+              ? const Image(image: fallbackImage)
+              : Image.network(
+                  slide.imageUrl!,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) => const Image(image: fallbackImage),
+                ),
+        ),
         const SizedBox(height: 32),
-        Text(
-          context.tr(slide.titleKey),
-          textAlign: TextAlign.center,
-          style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-        ),
+        Text(title, textAlign: TextAlign.center, style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: 12),
-        Text(
-          context.tr(slide.bodyKey),
-          textAlign: TextAlign.center,
-          style: text.bodyMedium?.copyWith(color: Theme.of(context).hintColor),
-        ),
+        Text(body, textAlign: TextAlign.center, style: text.bodyMedium?.copyWith(color: Theme.of(context).hintColor)),
       ],
     );
   }

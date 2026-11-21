@@ -44,8 +44,8 @@ class ContentRepository {
   /// [kind] is 'terms' or 'privacy'.
   Future<ContentDoc> fetchDoc(String kind) async {
     final rows = kind == 'privacy'
-        ? await _client.from('privacyPolicy').select('title, description, created_at').eq('is_active', true).order('order')
-        : await _client.from('terms').select('title, description, created_at').order('order');
+        ? await _client.from('privacyPolicy').select('title, description, created_at').eq('is_active', true).order('order', ascending: true)
+        : await _client.from('terms').select('title, description, created_at').order('order', ascending: true);
     DateTime? latest;
     for (final r in rows) {
       final d = DateTime.tryParse(r['created_at']?.toString() ?? '');
@@ -61,7 +61,7 @@ class ContentRepository {
   }
 
   Future<List<Faq>> fetchFaqs() async {
-    final rows = await _client.from('faq').select('id, title, description, like_count, unlike_count').order('order');
+    final rows = await _client.from('faq').select('id, title, description, like_count, unlike_count').order('order', ascending: true);
     return [
       for (final r in rows)
         Faq(

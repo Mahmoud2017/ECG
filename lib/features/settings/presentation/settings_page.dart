@@ -80,15 +80,18 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsCubit>().state;
+    final surface = Theme.of(context).colorScheme.surface;
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('nav_settings'))),
+      backgroundColor: surface,
+      appBar: AppBar(backgroundColor: surface, title: Text(context.tr('nav_settings'))),
       body: BlocBuilder<ProfileCubit, LoadState<Profile>>(
         builder: (context, state) {
           final p = state.data;
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
-              AppCard(
+              OutlinedCard(
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
                     ProfileAvatar(profile: p),
@@ -98,6 +101,8 @@ class _SettingsPageState extends State<SettingsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(p?.fullName ?? '—', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                          if ((p?.jobTitle ?? p?.specialty) != null)
+                            Text((p!.jobTitle ?? p.specialty)!, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.primary)),
                           if (p?.email != null) Text(p!.email!, style: Theme.of(context).textTheme.bodySmall),
                           if (p?.phoneNumber != null)
                             Text(p!.phoneNumber!, textDirection: TextDirection.ltr, style: Theme.of(context).textTheme.bodySmall),
@@ -131,9 +136,6 @@ class _SettingsPageState extends State<SettingsPage> {
               const SizedBox(height: 16),
               _Group(children: [
                 _SettingsTile(icon: Icons.help_outline_rounded, title: context.tr('help'), onTap: () => context.push(Routes.help)),
-                _SettingsTile(icon: Icons.support_agent_rounded, title: context.tr('contact_us'), onTap: () => context.push(Routes.contact)),
-                _SettingsTile(icon: Icons.privacy_tip_outlined, title: context.tr('privacy_policy'), onTap: () => context.push(Routes.privacy)),
-                _SettingsTile(icon: Icons.description_outlined, title: context.tr('terms_conditions'), onTap: () => context.push(Routes.terms)),
               ]),
               const SizedBox(height: 16),
               _Group(children: [
@@ -158,8 +160,8 @@ class _Group extends StatelessWidget {
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) => Card(
-        clipBehavior: Clip.antiAlias,
+  Widget build(BuildContext context) => OutlinedCard(
+        padding: const EdgeInsets.symmetric(vertical: 4),
         child: Column(children: children),
       );
 }

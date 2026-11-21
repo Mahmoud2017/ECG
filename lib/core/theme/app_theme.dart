@@ -14,6 +14,11 @@ class AppColors {
   static const darkBg = Color(0xFF0B1220);
   static const darkSurface = Color(0xFF141C2E);
 
+  /// Solid blue of the app's buttons and headers (from the design screenshots).
+  static const brand = Color(0xFF1F7AF0);
+  static const fieldFill = Color(0xFFF4F6FA);
+  static const fieldBorder = Color(0xFFE5E9F0);
+
   static const gradient = LinearGradient(
     colors: [primaryLight, primary],
     begin: Alignment.topLeft,
@@ -45,7 +50,7 @@ class AppTheme {
       bodyColor: isDark ? Colors.white : AppColors.navy,
       displayColor: isDark ? Colors.white : AppColors.navy,
     );
-    final radius = BorderRadius.circular(14);
+    final radius = BorderRadius.circular(12);
 
     return base.copyWith(
       scaffoldBackgroundColor: isDark ? AppColors.darkBg : const Color(0xFFF6F8FC),
@@ -66,11 +71,14 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isDark ? AppColors.darkSurface : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide(color: scheme.outlineVariant)),
-        enabledBorder: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide(color: scheme.outlineVariant)),
-        focusedBorder: OutlineInputBorder(borderRadius: radius, borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+        fillColor: isDark ? AppColors.darkSurface : AppColors.fieldFill,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        hintStyle: TextStyle(color: isDark ? Colors.white54 : const Color(0xFF9AA3B2)),
+        prefixIconColor: isDark ? Colors.white60 : const Color(0xFF8A93A3),
+        suffixIconColor: isDark ? Colors.white60 : const Color(0xFF8A93A3),
+        border: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide(color: isDark ? scheme.outlineVariant : AppColors.fieldBorder)),
+        enabledBorder: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide(color: isDark ? scheme.outlineVariant : AppColors.fieldBorder)),
+        focusedBorder: OutlineInputBorder(borderRadius: radius, borderSide: const BorderSide(color: AppColors.brand, width: 1.5)),
         errorBorder: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide(color: scheme.error)),
       ),
       filledButtonTheme: FilledButtonThemeData(

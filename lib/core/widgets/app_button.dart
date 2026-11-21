@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_theme.dart';
 
+/// Primary action: solid brand-blue pill (from the design), or an outlined pill.
 class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
@@ -21,10 +22,10 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final child = loading
-        ? const SizedBox(
+        ? SizedBox(
             width: 22,
             height: 22,
-            child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+            child: CircularProgressIndicator(strokeWidth: 2.4, color: outlined ? AppColors.brand : Colors.white),
           )
         : Row(
             mainAxisSize: MainAxisSize.min,
@@ -34,24 +35,37 @@ class AppButton extends StatelessWidget {
             ],
           );
 
-    if (outlined) {
-      return OutlinedButton(onPressed: loading ? null : onPressed, child: child);
-    }
+    const shape = StadiumBorder();
+    const size = Size.fromHeight(54);
+    final textStyle = Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, fontSize: 16);
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: onPressed == null ? null : AppColors.gradient,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: FilledButton(
-        style: FilledButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          foregroundColor: Colors.white,
+    if (outlined) {
+      return OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          shape: shape,
+          minimumSize: size,
+          foregroundColor: AppColors.brand,
+          side: const BorderSide(color: AppColors.brand),
+          textStyle: textStyle,
         ),
         onPressed: loading ? null : onPressed,
         child: child,
+      );
+    }
+
+    return FilledButton(
+      style: FilledButton.styleFrom(
+        shape: shape,
+        minimumSize: size,
+        backgroundColor: AppColors.brand,
+        foregroundColor: Colors.white,
+        disabledBackgroundColor: AppColors.brand.withValues(alpha: loading ? 0.85 : 0.4),
+        disabledForegroundColor: Colors.white,
+        elevation: 0,
+        textStyle: textStyle,
       ),
+      onPressed: loading ? null : onPressed,
+      child: child,
     );
   }
 }

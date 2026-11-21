@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../profile/data/profile_repository.dart';
 import 'ecg_analysis.dart';
 import 'patient.dart';
 
@@ -23,6 +24,7 @@ class PatientsRepository {
 
   /// Saves the patient record; the analysis is attached in memory only (no result columns).
   Future<Patient> create(AnalysisRequest request, EcgAnalysis analysis) async {
+    await ensureProfileRow(_client); // doctor_id -> profiles(id)
     final row = await _client.from('patients').insert(Patient.insertJson(request, _uid)).select().single();
     return Patient.fromJson(row).withRun(request, analysis);
   }

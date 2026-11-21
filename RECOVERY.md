@@ -15,9 +15,9 @@ the implementation rewritten to match.
 | All 52 file paths and folder layout (`recovered/original_file_list.txt`) | Widget trees and layout (rewritten to match the names) |
 | Class names: pages, cubits, repositories, private widgets (`recovered/app_private_symbols.txt`) | Exact styling, spacing, animations |
 | Every route path (`/home`, `/analysis-result`, `/help/faq` …) | Dependency **versions** (only package names survive) |
-| Dependency list (supabase_flutter, go_router, flutter_bloc, get_it, pinput …) | `content` / `contact_info` table layout |
-| Supabase URL and publishable key | RLS policies and column types |
-| Tables: `profiles`, `patients`, `contact_messages`, `faq_votes`; RPC `faq_vote` | Onboarding images (not in the APK) |
+| Dependency list (supabase_flutter, go_router, flutter_bloc, get_it, pinput …) | Column types, RLS policies, triggers |
+| Supabase URL and publishable key | |
+| Tables (verified on the live project): `profiles`, `patients`, `contact_messages`, `terms`, `privacyPolicy`, `faq`, `socialLinks`, `onBoarding` | |
 | Nearly all English and Arabic UI text plus l10n keys | About 30 strings marked `// ~` in `app_localizations.dart` |
 | Images, icon and splash (`assets/images/`) | |
 | Theme font (Poppins), brand colours | |
@@ -44,18 +44,26 @@ flutter run
 Otherwise installed users can't update. If the keystore is lost too, you need a new
 Play listing (or Play App Signing key-upgrade if you enrolled).
 
-## Recover the real database schema (better than `supabase/schema.sql`)
+## Database schema
 
-The database is still live. Pull the true schema instead of using the reconstruction:
+`supabase/schema.sql` is the real schema exported from the Supabase dashboard (2026-11-19). The repositories in
+`lib/features/*/data/` match it, and the app's form validators mirror its CHECK constraints. Notes:
+
+- `patients` stores only `doctor_id, patient_code, age, sex, notes`, with no analysis results. The AI was a mock, so
+  History shows patient records and a result exists only right after a run.
+- `patients.doctor_id` and `contact_messages.user_id` reference `profiles(id)`. The app creates the doctor's own
+  `profiles` row from sign-up metadata if it's missing (`ensureProfileRow`).
+- `profiles` has no location column, so location is kept in the auth user's metadata.
+- FAQ votes update `faq.like_count` and `faq.unlike_count` directly; there's no vote table or vote function.
+- Help-centre content is English only. Arabic falls back to built-in text where it exists (onboarding).
+
+Row-level security policies and triggers aren't in that export. To pull them too:
 
 ```bash
 npx supabase login
 npx supabase link --project-ref xomswbnxqrxrjohjyhkm
-npx supabase db pull          # writes supabase/migrations/<ts>_remote_schema.sql
+npx supabase db pull
 ```
-
-Then compare the queries in `lib/features/*/data/*_repository.dart` with it. Most likely
-mismatches: `content` (privacy/terms/faq), `contact_info`, column types in `patients`.
 
 ## Getting closer to the original code (optional)
 

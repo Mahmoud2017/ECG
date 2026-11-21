@@ -97,7 +97,7 @@ class AppLocalizations {
     'full_name_hint': 'Enter your full name',
     'phone_number': 'Phone Number',
     'confirm_password': 'Confirm Password',
-    'or_continue_with': 'Or continue with', // ~
+    'or_continue_with': 'or continue with',
     'terms_notice': 'By logging, you agree to our',
     'and': 'and', // ~
     'confirm_email_title': 'Confirm your email',
@@ -130,6 +130,8 @@ class AppLocalizations {
     'start_analysis_title': 'Upload or Scan 12-Lead ECG',
     'start_analysis_body': 'Upload or scan a 12-lead ECG and get AI insights in seconds.',
     'start_now': 'Start now',
+    'new_ecg_analysis': 'New ECG Analysis',
+    'today': 'Today',
 
     // Analysis
     'upload_title': 'New ECG analysis', // ~
@@ -206,7 +208,8 @@ class AppLocalizations {
     'message_sent': 'Message sent. We will get back to you soon.',
     'follow_us': 'Follow Us',
     'phone': 'Phone',
-    'email': 'Email', // ~
+    'whatsapp': 'WhatsApp',
+    'email': 'Email',
   };
 
   static const Map<String, String> _ar = {
@@ -312,6 +315,8 @@ class AppLocalizations {
     'start_analysis_title': 'ارفع أو امسح تخطيط قلب 12 قطباً',
     'start_analysis_body': 'ارفع أو امسح تخطيط قلب بـ12 قطباً واحصل على نتائج الذكاء الاصطناعي.',
     'start_now': 'ابدأ الآن',
+    'new_ecg_analysis': 'تحليل تخطيط قلب جديد',
+    'today': 'اليوم',
 
     'upload_title': 'تحليل تخطيط قلب جديد',
     'upload_formats': 'يدعم DICOM و PDF و JPEG/PNG عالي الدقة أو ملفات XML',
@@ -383,6 +388,7 @@ class AppLocalizations {
     'message_sent': 'تم إرسال رسالتك. سنتواصل معك قريباً.',
     'follow_us': 'تابعنا',
     'phone': 'الهاتف',
+    'whatsapp': 'واتساب',
     'email': 'البريد الإلكتروني',
   };
 }

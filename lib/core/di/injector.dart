@@ -31,7 +31,7 @@ Future<void> setupInjector() async {
     ..registerLazySingleton<EcgAnalysisRepository>(MockEcgAnalysisRepository.new)
     ..registerLazySingleton(() => ContactRepository(client))
     ..registerLazySingleton(() => ContentRepository(client))
-    ..registerLazySingleton(() => OnboardingRepository(prefs))
+    ..registerLazySingleton(() => OnboardingRepository(prefs, client))
     // App-wide cubits
     ..registerSingleton(SettingsCubit(prefs))
     ..registerSingleton(AuthCubit(sl()))

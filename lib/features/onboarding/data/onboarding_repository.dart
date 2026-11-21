@@ -46,9 +46,9 @@ class OnboardingRepository {
     ),
   ];
 
-  /// onBoarding(id, created_at, title, content, image, orders, is_active)
+  /// onBoarding(id, created_at, title, content, image, orders, is_active) — is_active is nullable; NULL counts as active.
   Future<List<OnboardingSlide>> fetchSlides() async {
-    final rows = await _client.from('onBoarding').select('title, content, image').eq('is_active', true).order('orders');
+    final rows = await _client.from('onBoarding').select('title, content, image').or('is_active.is.null,is_active.eq.true').order('orders', ascending: true);
     if (rows.isEmpty) return fallback;
     return [
       for (final (i, r) in rows.indexed)

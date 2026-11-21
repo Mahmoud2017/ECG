@@ -1,8 +1,10 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/di/injector.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/errors.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_button.dart';
@@ -80,57 +82,68 @@ class _ContactUsPageState extends State<ContactUsPage> {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final blue = pageTitleColor(context);
+    final l = _links;
+    final whatsDigits = l.whatsApp?.replaceAll(RegExp(r'[^0-9]'), '');
+
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('contact_us'))),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: TitleAppBar(title: context.tr('contact_us')),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
         children: [
-          Text(context.tr('get_in_touch'), style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(context.tr('contact_subtitle'), style: text.bodyMedium?.copyWith(color: Theme.of(context).hintColor)),
-          const SizedBox(height: 16),
-          if (_links.phone != null || _links.email != null)
-            Row(
-              children: [
-                if (_links.phone != null)
-                  Expanded(
-                    child: _ContactCard(
-                      icon: Icons.phone_rounded,
-                      label: context.tr('phone'),
-                      value: _links.phone!,
-                      uri: Uri(scheme: 'tel', path: _links.phone),
-                    ),
-                  ),
-                if (_links.phone != null && _links.email != null) const SizedBox(width: 12),
-                if (_links.email != null)
-                  Expanded(
-                    child: _ContactCard(
-                      icon: Icons.mail_rounded,
-                      label: context.tr('email'),
-                      value: _links.email!,
-                      uri: Uri(scheme: 'mailto', path: _links.email),
-                    ),
-                  ),
-              ],
-            ),
+          Row(
+            children: [
+              Container(width: 26, height: 3, decoration: BoxDecoration(color: blue, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 10),
+              Text(context.tr('get_in_touch'), style: text.titleSmall?.copyWith(color: blue, fontWeight: FontWeight.w500)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(context.tr('contact_subtitle'), style: text.bodyMedium?.copyWith(color: Theme.of(context).hintColor, height: 1.5)),
           const SizedBox(height: 20),
-          AppCard(
+          if (l.email != null)
+            _ContactRow(
+              icon: const Icon(Icons.mail_outline_rounded, color: AppColors.brand),
+              label: context.tr('email'),
+              value: l.email!,
+              uri: Uri(scheme: 'mailto', path: l.email),
+            ),
+          if (l.phone != null)
+            _ContactRow(
+              icon: const Icon(Icons.phone_outlined, color: AppColors.brand),
+              label: context.tr('phone'),
+              value: l.phone!,
+              uri: Uri(scheme: 'tel', path: l.phone),
+            ),
+          if (whatsDigits != null && whatsDigits.isNotEmpty)
+            _ContactRow(
+              icon: const FaIcon(FontAwesomeIcons.whatsapp, color: AppColors.brand, size: 22),
+              label: context.tr('whatsapp'),
+              value: l.whatsApp!,
+              uri: Uri.parse('https://wa.me/$whatsDigits'),
+            ),
+          const SizedBox(height: 8),
+          FollowUsSection(links: l, inline: true),
+          const SizedBox(height: 24),
+          OutlinedCard(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
             child: Form(
               key: _form,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(context.tr('send_message'), style: text.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                  Text(context.tr('send_message'), style: text.titleLarge?.copyWith(fontWeight: FontWeight.w500)),
                   const SizedBox(height: 16),
                   AppTextField(controller: _name, label: context.tr('full_name'), validator: Validators.name),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   AppTextField(
                     controller: _email,
                     label: context.tr('email_address'),
                     keyboardType: TextInputType.emailAddress,
                     validator: Validators.email,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   AppTextField(
                     controller: _message,
                     label: context.tr('message'),
@@ -140,42 +153,71 @@ class _ContactUsPageState extends State<ContactUsPage> {
                     textInputAction: TextInputAction.newline,
                     validator: Validators.message,
                   ),
-                  const SizedBox(height: 16),
-                  AppButton(label: context.tr('send_message_btn'), loading: _sending, onPressed: _send),
+                  const SizedBox(height: 20),
+                  AppButton(
+                    label: context.tr('send_message_btn'),
+                    icon: Icons.send_outlined,
+                    loading: _sending,
+                    onPressed: _send,
+                  ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          FollowUsSection(links: _links),
         ],
       ),
     );
   }
 }
 
-class _ContactCard extends StatelessWidget {
-  const _ContactCard({required this.icon, required this.label, required this.value, required this.uri});
+/// Outlined row: light-blue icon tile, label, muted value, chevron.
+class _ContactRow extends StatelessWidget {
+  const _ContactRow({required this.icon, required this.label, required this.value, required this.uri});
 
-  final IconData icon;
+  final Widget icon;
   final String label;
   final String value;
   final Uri uri;
 
   @override
-  Widget build(BuildContext context) => AppCard(
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: OutlinedCard(
+        padding: const EdgeInsets.all(16),
         onTap: () async {
-          final ok = await launchUrl(uri);
+          final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
           if (!ok && context.mounted) showSnack(context, 'error_open_link', error: true);
         },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Icon(icon, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 8),
-            Text(label, style: Theme.of(context).textTheme.labelMedium),
-            Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, textDirection: TextDirection.ltr),
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(color: AppColors.brand.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+              child: Center(child: icon),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textDirection: TextDirection.ltr,
+                    style: text.bodyMedium?.copyWith(color: Theme.of(context).hintColor),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: Theme.of(context).hintColor),
           ],
         ),
-      );
+      ),
+    );
+  }
 }

@@ -308,3 +308,56 @@ class AppCard extends StatelessWidget {
     );
   }
 }
+
+/// Title colour of the white sub-page app bars (Help, FAQ, Contact Us).
+Color pageTitleColor(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark ? const Color(0xFF7DB2FF) : const Color(0xFF1F6FE0);
+
+/// White app bar: dark back arrow and a large blue title aligned to the start.
+class TitleAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const TitleAppBar({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(72);
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = Theme.of(context).colorScheme.surface;
+    return AppBar(
+      toolbarHeight: 72,
+      backgroundColor: surface,
+      centerTitle: false,
+      titleSpacing: 8,
+      title: Text(
+        title,
+        style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: pageTitleColor(context), fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+}
+
+/// White card with a thin grey border (no shadow), as in the Help / FAQ / Contact designs.
+class OutlinedCard extends StatelessWidget {
+  const OutlinedCard({super.key, required this.child, this.padding = const EdgeInsets.all(20), this.onTap});
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(18),
+      side: BorderSide(color: dark ? Colors.white12 : AppColors.fieldBorder, width: 1.2),
+    );
+    return Material(
+      color: Theme.of(context).colorScheme.surface,
+      shape: shape,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(onTap: onTap, child: Padding(padding: padding, child: child)),
+    );
+  }
+}

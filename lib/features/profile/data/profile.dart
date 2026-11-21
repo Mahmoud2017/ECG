@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// public.profiles(id, created_at, full_name, email, phoneNo, avatar_url, specialty).
+/// public.profiles(id, created_at, full_name, email, phoneNo, "job-title", specialty, avatar_url).
 /// `location` has no column there; it lives in the auth user's metadata.
 class Profile extends Equatable {
   const Profile({
@@ -11,6 +11,7 @@ class Profile extends Equatable {
     this.location,
     this.avatarUrl,
     this.specialty,
+    this.jobTitle,
   });
 
   final String id;
@@ -20,6 +21,7 @@ class Profile extends Equatable {
   final String? location;
   final String? avatarUrl;
   final String? specialty;
+  final String? jobTitle;
 
   String get initials {
     final parts = (fullName ?? '').trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
@@ -34,6 +36,7 @@ class Profile extends Equatable {
         phoneNumber: j['phoneNo'] as String?,
         avatarUrl: j['avatar_url'] as String?,
         specialty: j['specialty'] as String?,
+        jobTitle: j['job-title'] as String?,
         location: location,
       );
 
@@ -45,8 +48,9 @@ class Profile extends Equatable {
         location: location ?? this.location,
         avatarUrl: avatarUrl,
         specialty: specialty,
+        jobTitle: jobTitle,
       );
 
   @override
-  List<Object?> get props => [id, fullName, email, phoneNumber, location, avatarUrl, specialty];
+  List<Object?> get props => [id, fullName, email, phoneNumber, location, avatarUrl, specialty, jobTitle];
 }

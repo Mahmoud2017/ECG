@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
 import '../../data/contact_repository.dart';
 
@@ -13,9 +14,12 @@ String? _socialUrl(String base, String? handle) {
 }
 
 class FollowUsSection extends StatefulWidget {
-  const FollowUsSection({super.key, required this.links});
+  const FollowUsSection({super.key, required this.links, this.inline = false});
 
   final ContactLinks links;
+
+  /// Footer style: "Follow Us" on the left, outlined square icons on the right.
+  final bool inline;
 
   @override
   State<FollowUsSection> createState() => _FollowUsSectionState();
@@ -39,6 +43,23 @@ class _FollowUsSectionState extends State<FollowUsSection> {
     ].where((e) => e.$3 != null).toList();
 
     if (items.isEmpty) return const SizedBox.shrink();
+    if (widget.inline) {
+      final dark = Theme.of(context).brightness == Brightness.dark;
+      return Row(
+        children: [
+          Expanded(
+            child: Text(
+              context.tr('follow_us'),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
+            ),
+          ),
+          for (final i in items) ...[
+            const SizedBox(width: 12),
+            _SquareButton(icon: i.$1, color: dark ? Colors.white : AppColors.navy, onTap: () => _open(i.$3!)),
+          ],
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -70,4 +91,30 @@ class _SocialButton extends StatelessWidget {
           child: FaIcon(icon, color: color, size: 20),
         ),
       );
+}
+
+class _SquareButton extends StatelessWidget {
+  const _SquareButton({required this.icon, required this.color, required this.onTap});
+
+  final FaIconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+      side: BorderSide(color: dark ? Colors.white24 : AppColors.fieldBorder),
+    );
+    return Material(
+      color: Colors.transparent,
+      shape: shape,
+      child: InkWell(
+        customBorder: shape,
+        onTap: onTap,
+        child: SizedBox(width: 52, height: 52, child: Center(child: FaIcon(icon, color: color, size: 22))),
+      ),
+    );
+  }
 }

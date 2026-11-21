@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../profile/data/profile_repository.dart';
+
 /// Contact links from the single-row `socialLinks` table
 /// (columns: phoneNo, whatsApp, faceBook, instagram, x, linkedIn, email).
 class ContactLinks {
@@ -35,13 +37,15 @@ class ContactRepository {
   final SupabaseClient _client;
 
   /// contact_messages(id, created_at, user_id, full_name, email, message)
-  Future<void> sendMessage({required String name, required String email, required String message}) =>
-      _client.from('contact_messages').insert({
-        'user_id': _client.auth.currentUser?.id,
-        'full_name': name.trim(),
-        'email': email.trim(),
-        'message': message.trim(),
-      });
+  /// user_id defaults to auth.uid() and references profiles(id); status defaults to 'new'.
+  Future<void> sendMessage({required String name, required String email, required String message}) async {
+    await ensureProfileRow(_client);
+    await _client.from('contact_messages').insert({
+      'full_name': name.trim(),
+      'email': email.trim(),
+      'message': message.trim(),
+    });
+  }
 
   Future<ContactLinks> fetchLinks() async {
     final row = await _client.from('socialLinks').select().limit(1).maybeSingle();
